@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121316">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Estrazione">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Estrazione Laurea</title>
+<style>
+:root{--bg:#111214;--s1:#1a1c1f;--s2:#23262a;--line:#2c3035;--tx:#ecebe8;--mu:#8d9198;--acc:#e0362c;--ok:#4cb782}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+header{padding:28px 32px 0}
+h1{font-size:22px;font-weight:650;letter-spacing:-.3px}
+header p{color:var(--mu);margin-top:2px}
+main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(340px,1fr);gap:28px;padding:24px 32px 32px;max-width:1400px;margin:auto}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.stage{aspect-ratio:16/9;border-radius:20px;background:var(--s1);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+.stage small{color:var(--mu);font-size:16px;margin-bottom:8px}
+.stage strong{font-size:clamp(36px,6.5vw,88px);font-weight:700;letter-spacing:-2px;line-height:1.05;word-break:break-word}
+.stage strong.empty{color:var(--line)}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px;margin-top:20px}
+.actions{display:flex;gap:10px;align-items:center}
+button{font:inherit;font-weight:550;border:0;border-radius:12px;padding:0 20px;height:42px;cursor:pointer;background:var(--s2);color:var(--tx);transition:background .15s}
+button:hover:not(:disabled){background:#2e3237}
+button:disabled{opacity:.35;cursor:default}
+button.primary{background:var(--acc);color:#fff}
+button.primary:hover:not(:disabled){background:#c92d24}
+button:focus-visible,input:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+.status{color:var(--mu);display:flex;align-items:center;gap:8px}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mu)}
+.status.on{color:var(--ok)}.status.on::before{background:var(--ok)}
+.timing{display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--mu)}
+.step{display:flex;align-items:center;background:var(--s1);border:1px solid var(--line);border-radius:12px}
+.step button{width:38px;height:38px;padding:0;font-size:20px;background:none;border-radius:11px;color:var(--tx)}
+.step output{min-width:34px;text-align:center;color:var(--tx);font-weight:650;font-variant-numeric:tabular-nums}
+aside{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:22px;align-self:start}
+aside h2{font-size:17px;font-weight:650;margin-bottom:14px}
+aside h2 span{color:var(--mu);font-weight:400;margin-left:6px}
+form{display:flex;gap:8px}
+input{font:inherit;flex:1;min-width:0;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:12px;height:42px;padding:0 14px}
+input::placeholder{color:var(--mu)}
+.err{min-height:22px;color:#ff8a80;font-size:13px;margin:6px 2px 8px}
+.row{display:grid;grid-template-columns:38px 1fr auto;gap:2px 12px;align-items:center;padding:10px;border-radius:12px}
+.row+.row{margin-top:2px}
+.row.fest{background:rgba(224,54,44,.12)}
+.av{width:38px;height:38px;border-radius:50%;background:var(--s2);display:grid;place-items:center;font-weight:650;grid-row:span 2}
+.fest .av{background:var(--acc)}
+.nm{font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{color:var(--mu);font-size:13px;grid-column:2}
+.score{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;grid-row:span 2}
+.score small{color:var(--mu);font-size:12px;font-weight:400}
+.meter{grid-column:1/-1;height:4px;background:var(--s2);border-radius:2px;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--acc);border-radius:2px;transition:width .5s}
+.fest .meter i{background:#ff6a5e}
+.rm{grid-column:1/-1;justify-self:end;background:none;height:26px;padding:0 8px;font-size:12px;font-weight:500;color:var(--mu);border-radius:8px;margin-top:2px}
+.rm:hover:not(:disabled){background:rgba(224,54,44,.18);color:#ff8a80}
+.rm.sure{background:var(--acc);color:#fff}
+#ov{position:fixed;inset:0;background:rgba(10,10,11,.96);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:9;cursor:pointer}
+#ov.show{display:flex}
+#ov small{color:var(--mu);font-size:clamp(18px,3vw,32px);margin-bottom:12px}
+#ov strong{font-size:clamp(56px,13vw,200px);letter-spacing:-4px;line-height:1}
+#ov strong.in{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+@media(prefers-reduced-motion:reduce){#ov strong.in{animation:none}.meter i{transition:none}}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+input,select{font-size:16px}
+@media(max-width:900px){
+  header h1{font-size:20px}
+  .stage{min-height:220px;padding:28px 16px}
+  .controls{padding:16px}
+  .actions button{flex:1 1 auto}
+  .status{margin-left:0;width:100%}
+  .hint{margin-left:0;width:100%}
+  .freq label{flex:1 1 40%}.freq select{flex:1}
+  #list{max-height:none}
+  .del{height:36px}
+}
+</style>
+</head>
+<body>
+<header><h1>Estrazione Laurea</h1><p>Festeggiato: Dottor Campari</p></header>
+<main>
+  <section>
+    <div class="stage"><small>Ultima estrazione</small><strong class="empty" id="last">Nessuna, per ora</strong></div>
+    <div class="controls">
+      <div class="actions">
+        <button class="primary" id="go">Avvia gioco</button>
+        <button id="stop" disabled>Ferma</button>
+        <button id="now">Estrai ora</button>
+      </div>
+      <span class="status" id="st">Gioco fermo</span>
+    </div>
+    <div class="timing">Un'estrazione ogni tra
+      <div class="step"><button data-k="mn" data-d="-1" aria-label="Meno">−</button><output id="mnv">1</output><button data-k="mn" data-d="1" aria-label="Più">+</button></div>
+      e
+      <div class="step"><button data-k="mx" data-d="-1" aria-label="Meno">−</button><output id="mxv">3</output><button data-k="mx" data-d="1" aria-label="Più">+</button></div>
+      minuti</div>
+  </section>
+  <aside>
+    <h2>Iscritti<span id="cnt"></span></h2>
+    <form id="f"><input id="n" placeholder="Scrivi il tuo nome" maxlength="30" autocomplete="off" required><button class="primary">Iscriviti</button></form>
+    <div class="err" id="err" role="alert"></div>
+    <div id="list"></div>
+  </aside>
+</main>
+<div id="ov"><small id="ovs"></small><strong id="ovn"></strong></div>
+
+<script>
+// ---- CONFIGURAZIONE ----
+const FESTEGGIATO = "Dottor Campari";
+const PESO_BASE = 1;     // peso iniziale degli iscritti
+const PESO_FEST = 8;     // peso iniziale del festeggiato
+const INC_ALTRI = 0.1;   // +10% del peso base a ogni mancata estrazione (lineare)
+const MOLT_FEST = 1.2;   // +20% composto a ogni mancata estrazione (esponenziale)
+// Chi viene estratto torna al peso iniziale. Il punteggio 0-10 è il peso rapportato al più alto in gioco.
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+const nuovo = (nome, fest) => ({ nome, fest, peso: fest ? PESO_FEST : PESO_BASE, estr: 0 });
+
+let wl = null;
+async function tieniSveglio() { try { if ("wakeLock" in navigator) wl = await navigator.wakeLock.request("screen"); } catch (e) {} }
+document.addEventListener("visibilitychange", () => { if (attivo && document.visibilityState === "visible") tieniSveglio(); });
+// iOS permette audio e voce solo dopo un tocco: li "sblocchiamo" al primo pulsante premuto
+function sblocca() {
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  audio.resume();
+  try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
+}
+
+let P = carica(), attivo = false, busy = false, timer = null, ctx = null;
+const T = { mn: 1, mx: 3 };
+
+function carica() {
+  let s = [];
+  try { s = JSON.parse(localStorage.getItem("iscritti")) || []; } catch (e) {}
+  if (!Array.isArray(s)) s = [];
+  const f = s.find(p => p.fest) || nuovo(FESTEGGIATO, true);
+  f.nome = FESTEGGIATO;
+  const visti = new Set([norm(FESTEGGIATO)]);
+  const altri = s.filter(p => !p.fest && p.nome && !visti.has(norm(p.nome)) && visti.add(norm(p.nome)));
+  return [f, ...altri];
+}
+const salva = () => { try { localStorage.setItem("iscritti", JSON.stringify(P)); } catch (e) {} };
+
+function render() {
+  const mx = Math.max(...P.map(p => p.peso));
+  const ord = [...P].sort((a, b) => b.fest - a.fest || b.peso - a.peso);
+  $("cnt").textContent = P.length;
+  $("list").innerHTML = ord.map(p => {
+    const sc = p.peso / mx * 10;
+    return `<div class="row ${p.fest ? "fest" : ""}">
+      <div class="av">${esc(p.nome[0].toUpperCase())}</div>
+      <div class="nm">${esc(p.nome)}</div>
+      <div class="score">${sc.toFixed(1)}<small> /10</small></div>
+      <div class="sub">${p.fest ? "Festeggiato · " : ""}estratto ${p.estr} ${p.estr === 1 ? "volta" : "volte"}</div>
+      <div class="meter"><i style="width:${sc * 10}%"></i></div>
+      ${p.fest ? "" : `<button class="rm" data-n="${esc(p.nome)}">Rimuovi</button>`}</div>`;
+  }).join("");
+}
+
+function errore(t) { $("err").textContent = t; clearTimeout(errore.t); errore.t = setTimeout(() => $("err").textContent = "", 3500); }
+
+$("f").onsubmit = e => {
+  e.preventDefault();
+  const nome = $("n").value.trim().replace(/\s+/g, " ");
+  if (!nome) return;
+  if (P.some(p => norm(p.nome) === norm(nome))) return errore(`"${nome}" è già iscritto. Aggiungi un cognome o un soprannome.`);
+  P.push(nuovo(nome, false)); salva(); render();
+  $("n").value = ""; $("err").textContent = ""; $("n").focus();
+};
+
+$("list").onclick = e => {
+  const b = e.target.closest(".rm"); if (!b) return;
+  if (!b.classList.contains("sure")) {
+    b.classList.add("sure"); b.textContent = "Sicuro? Tocca ancora";
+    setTimeout(() => { if (b.isConnected) { b.classList.remove("sure"); b.textContent = "Rimuovi"; } }, 3000);
+    return;
+  }
+  P = P.filter(p => p.fest || p.nome !== b.dataset.n); salva(); render();
+};
+
+document.querySelectorAll(".step button").forEach(b => b.onclick = () => {
+  const k = b.dataset.k, d = +b.dataset.d;
+  T[k] = Math.min(60, Math.max(1, T[k] + d));
+  if (T.mn > T.mx) { if (k === "mn") T.mx = T.mn; else T.mn = T.mx; }
+  $("mnv").textContent = T.mn; $("mxv").textContent = T.mx;
+});
+
+function scegli() {
+  let r = Math.random() * P.reduce((s, p) => s + p.peso, 0);
+  for (const p of P) { r -= p.peso; if (r < 0) return p; }
+  return P[P.length - 1];
+}
+
+function colpo(t) {
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.3, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+  g.connect(ctx.destination);
+  [[1, 1], [2, .5], [2.76, .35], [5.4, .15]].forEach(([r, a]) => {
+    const o = ctx.createOscillator(), v = ctx.createGain();
+    o.frequency.value = 660 * r; v.gain.value = a;
+    o.connect(v); v.connect(g); o.start(t); o.stop(t + 1.9);
+  });
+}
+function campana() {
+  ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+  ctx.resume();
+  [0, .75, 1.5].forEach(d => colpo(ctx.currentTime + d));
+  return sleep(2800);
+}
+
+function parla(testo) {
+  return new Promise(res => {
+    const s = window.speechSynthesis; if (!s) return res();
+    s.cancel();
+    const u = new SpeechSynthesisUtterance(testo);
+    u.lang = "it-IT"; u.rate = 0.95;
+    const v = s.getVoices().find(v => v.lang.startsWith("it")); if (v) u.voice = v;
+    u.onend = u.onerror = res;
+    setTimeout(res, 15000);
+    s.speak(u);
+  });
+}
+
+function mostra(sopra, nome) {
+  $("ovs").textContent = sopra; $("ovn").textContent = nome;
+  $("ovn").classList.remove("in"); void $("ovn").offsetWidth; $("ovn").classList.add("in");
+}
+
+async function estrai() {
+  if (busy || !P.length) return;
+  busy = true;
+  const w = scegli();
+  w.estr++;
+  P.forEach(p => {
+    if (p === w) p.peso = p.fest ? PESO_FEST : PESO_BASE;
+    else if (p.fest) p.peso *= MOLT_FEST;
+    else p.peso += INC_ALTRI;
+  });
+  salva();
+  if (window.api) await window.api.music("pause");
+  await sleep(500);
+  mostra("Attenzione", "🔔"); $("ov").classList.add("show");
+  await campana();
+  mostra("È stato estratto", w.nome);
+  $("last").textContent = w.nome; $("last").classList.remove("empty");
+  await parla(`È stato estratto il nome: ${w.nome}!`);
+  await Promise.race([sleep(6000), new Promise(r => $("ov").onclick = r)]);
+  $("ov").classList.remove("show");
+  render();
+  if (window.api) await window.api.music("resume");
+  busy = false;
+}
+
+function pianifica() {
+  if (!attivo) return;
+  const min = Math.min(T.mn, T.mx), max = Math.max(T.mn, T.mx);
+  timer = setTimeout(async () => { await estrai(); pianifica(); }, (min + Math.random() * (max - min)) * 60000);
+}
+function stato(on) {
+  attivo = on;
+  $("go").disabled = on; $("stop").disabled = !on;
+  $("st").textContent = on ? "Gioco in corso" : "Gioco fermo";
+  $("st").classList.toggle("on", on);
+}
+$("go").onclick = () => { sblocca(); tieniSveglio(); stato(true); pianifica(); };
+$("stop").onclick = () => { stato(false); clearTimeout(timer); if (wl) { wl.release(); wl = null; } };
+$("now").onclick = () => { sblocca(); estrai(); };
+
+if (window.speechSynthesis) speechSynthesis.getVoices();
+render();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
